@@ -1,8 +1,11 @@
 import { Formik, Form } from "formik";
 import React from "react";
 import * as Yup from "yup";
-import { FormField } from "./FormField";
 import { useSelector } from "react-redux";
+
+import { FormField } from "./FormField";
+import { Button } from "./Button";
+import { ErrorMessage, SuccessMessage } from "./Message";
 
 const ModalComponent = ({
   showModal,
@@ -15,13 +18,13 @@ const ModalComponent = ({
     (state) => state.books
   );
   const initialValues = {
-    author: "jhdsg",
-    country: "sjdh",
-    language: "hdgsa",
-    link: "shd.sjdh.sajdh",
-    pages: 200,
-    title: "New book",
-    year: 2000,
+    author: "",
+    country: "",
+    language: "",
+    link: "",
+    pages: 0,
+    title: "",
+    year: new Date().getFullYear(),
   };
 
   const validationSchema = Yup.object({
@@ -36,7 +39,7 @@ const ModalComponent = ({
       ),
     pages: Yup.number()
       .required("Required")
-      .min(100, "Pages must be greater then equal to 100"),
+      .min(1, "Pages must be greater then equal to 1"),
     title: Yup.string().required("Required"),
     year: Yup.number()
       .required("Required")
@@ -78,24 +81,18 @@ const ModalComponent = ({
                     <>
                       <div className="modal-header">
                         <h5 className="modal-title">{modalTitle}</h5>
-                        <button
-                          type="button"
-                          className="close btn btn-secondary"
+                        <Button
+                          className="close btn-dark"
                           onClick={handleModalClose}
-                        >
-                          <span>&times;</span>
-                        </button>
+                          children={<span>&times;</span>}
+                        />
                       </div>
                       <div className="modal-body">
                         {successMessage && (
-                          <div className="text-success fw-bold d-flex justify-content-start mb-2">
-                            {successMessage}
-                          </div>
+                          <SuccessMessage message={successMessage} />
                         )}
                         {errorMessage && (
-                          <div className="text-danger fw-bold d-flex justify-content-start mb-2">
-                            {errorMessage}
-                          </div>
+                          <ErrorMessage message={errorMessage} />
                         )}
                         {fieldArray.map((field) => (
                           <FormField
@@ -106,23 +103,19 @@ const ModalComponent = ({
                             touched={touched}
                           />
                         ))}
-                        {/* </Form> */}
                       </div>
                       <div className="modal-footer">
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
+                        <Button
+                          className={"btn-outline-dark"}
                           onClick={handleModalClose}
-                        >
-                          Close
-                        </button>
-                        <button
+                          buttonName={"Close"}
+                        />
+                        <Button
+                          className={"btn-dark"}
                           type="submit"
-                          className="btn btn-primary"
                           disabled={loading}
-                        >
-                          Submit
-                        </button>
+                          buttonName={"Submit"}
+                        />
                       </div>
                     </>
                   </Form>

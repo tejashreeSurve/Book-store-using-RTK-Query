@@ -1,88 +1,159 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, createRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchBooks,
-  getBooksQuery,
-  updateBook,
-  useGetBooksQuery,
-} from "../../feature/bookApis";
+
+import { useGetBooksQuery, usePutBookMutation } from "../../feature/bookApis";
 import BookCard from "../BookCard/BookCard";
-import { openEditModalAction } from "../../feature/bookSlice";
+import {
+  openEditModalAction,
+  setBookList,
+  setErrorMessage,
+  setSuccessMessage,
+  setTotalPage,
+} from "../../feature/bookSlice";
 import ModalComponent from "../../sharedComponents/ModalComponent";
 import { Pagination } from "../Pagination/Pagination";
-import { useGetPaginatedDataQuery } from "../../feature/bookApis";
+import { filterArrayFunc, sortedArrayFunc } from "../../utils/utils";
+import { ErrorMessage, InfoMessage } from "../../sharedComponents/Message";
 
+const SortedArrayComponent = ({ array, setEditBookDetails }) => {
+  return (
+    <>
+      {array.map((book) => (
+        <div className="col">
+          <BookCard bookDetails={book} editBook={setEditBookDetails} />
+        </div>
+      ))}
+    </>
+  );
+};
 const BookList = () => {
   const dispatch = useDispatch();
-
+  const scrollRef = createRef();
   const {
-    bookList,
     openEditModal,
     errorMessage,
-    successMessage,
-    // page,
+    page,
     totalPages,
+    title,
+    bookList,
+    sortBy,
+    filterObject,
+    sortedArrayKey,
   } = useSelector((state) => state.books);
   const [editBook, setEditBook] = useState({});
-  const [page, setPage] = useState(1);
 
-  const { data } = useGetBooksQuery(page);
-  console.log(data);
+  const { data, isLoading } = useGetBooksQuery({ page, title, sortBy });
+  const [mutation] = usePutBookMutation();
 
-  // const { data } = useGetPaginatedDataQuery(page);
-  // console.log("useGetPaginatedDataQuery(page)", data);
+  const [sortedArray, setSortedArray] = useState([]);
 
-  // useEffect(() => {
-  //   console.log("Will Run for first Time");
-  //   dispatch(fetchBooks(1));
-  // }, [dispatch]);
+  // Set book List
+  useEffect(() => {
+    if (data?.data) {
+      dispatch(setBookList(data.data));
+    }
+  }, [data, dispatch]);
 
+  // Sorting Logic
+  useEffect(() => {
+    if (sortedArrayKey === "sort") {
+      if (sortBy !== "default") {
+        const array = [...bookList];
+        const sortArray = sortedArrayFunc(array, sortBy);
+        setSortedArray(sortArray);
+      } else {
+        setSortedArray([]);
+      }
+    }
+  }, [bookList, sortBy, dispatch, sortedArrayKey]);
+
+  // Filtering Logic
+  useEffect(() => {
+    if (sortedArrayKey === "filter") {
+      if (Object.keys(filterObject).length) {
+        const array = [...bookList];
+        const sortArray = filterArrayFunc(array, filterObject);
+        if (!sortArray.length) {
+          dispatch(setErrorMessage("No data found for the give filter!!!"));
+        } else {
+          setSortedArray(sortArray);
+        }
+      } else {
+        setSortedArray([]);
+      }
+    }
+  }, [filterObject, bookList, dispatch, sortedArrayKey]);
+
+  // Setting total Page
+  useEffect(() => {
+    if (!isLoading && page === 1) {
+      dispatch(setTotalPage(data.pagination.totalPages));
+    }
+  }, [isLoading, page, dispatch, data]);
+
+  // Open Edit Modal
   const handleEditModal = useCallback(() => {
     dispatch(openEditModalAction());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (successMessage && openEditModal) {
-      setTimeout(() => handleEditModal(), 1000);
-    }
-  }, [successMessage, openEditModal, handleEditModal]);
-
+  // Set book which need to Edit
   const setEditBookDetails = (book) => {
     setEditBook(book);
     handleEditModal();
   };
 
+  // On Edit Sumbit Click
   const handleSubmit = useCallback(
-    (bookDetails) => {
-      dispatch(updateBook(bookDetails));
+    async (bookDetails) => {
+      try {
+        const response = await mutation(bookDetails);
+        if (response?.error) {
+          dispatch(setErrorMessage(response.error.data.message));
+        } else {
+          dispatch(setSuccessMessage("Book is update Successfully!!"));
+          setTimeout(() => handleEditModal(), 1000);
+        }
+      } catch (error) {
+        dispatch(setErrorMessage("Failed to add new Book!!!"));
+      }
     },
-    [dispatch]
+    [mutation, dispatch, handleEditModal]
   );
 
   return (
-    <div className="container">
-      {errorMessage && (
-        <div className="text-danger d-flex justify-content-start">
-          {errorMessage}
+    <div className="container mt-3">
+      {isLoading ? (
+        <div className="text-warning d-flex justify-content-center">
+          ...loading
+        </div>
+      ) : (
+        <div ref={scrollRef}>
+          {errorMessage && <ErrorMessage message={errorMessage} />}
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+            <SortedArrayComponent
+              array={sortedArray.length !== 0 ? sortedArray : bookList}
+              setEditBookDetails={setEditBookDetails}
+            />
+          </div>
+          {bookList.length === 0 && (
+            <InfoMessage message="Sorry, No Data found!!!" />
+          )}
+          {openEditModal && (
+            <ModalComponent
+              showModal={openEditModal}
+              handleModalClose={handleEditModal}
+              modalTitle="Edit Book Details"
+              bookDetails={editBook}
+              onSubmit={handleSubmit}
+            />
+          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            scrollRef={scrollRef}
+          />
         </div>
       )}
-      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-        {/* {bookList.map((book) => (
-          <div className="col">
-            <BookCard bookDetails={book} editBook={setEditBookDetails} />
-          </div>
-        ))} */}
-      </div>
-      {openEditModal && (
-        <ModalComponent
-          showModal={openEditModal}
-          handleModalClose={handleEditModal}
-          modalTitle="Edit Book Details"
-          bookDetails={editBook}
-          onSubmit={handleSubmit}
-        />
-      )}
-      <Pagination page={page} totalPages={totalPages} />
     </div>
   );
 };

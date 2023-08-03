@@ -1,0 +1,18 @@
+.page-heading {
+    display: flex;
+    align-self: self-end;
+    font-style: normal;
+    flex-direction: column;
+}
+
+.book-style {
+    font-weight: 100;
+    font-size: 5rem;
+}
+
+.store-style {
+    font-weight: 800;
+    font-size: 3rem;
+    margin-left: 5rem;
+    padding-top: -2rem;
+}

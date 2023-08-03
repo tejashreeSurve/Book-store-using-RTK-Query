@@ -1,6 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { addBook, fetchBooks, updateBook } from "./bookApis";
-import { bookApi } from "./bookApis";
 
 const initialState = {
   bookList: [],
@@ -11,15 +9,11 @@ const initialState = {
   openAddModal: false,
   page: 1,
   totalPages: 0,
+  title: "",
+  sortBy: "default",
+  filterObject: {},
+  sortedArrayKey: "sort",
 };
-
-// const {
-//   getBooks: getBookQuery,
-//   addBook: addBookQuery,
-//   updateBook: updateBookQuery,
-// } = bookApi.endpoints;
-
-// console.log("getBook", getBookQuery);
 
 const bookSlice = createSlice({
   name: "books",
@@ -41,113 +35,45 @@ const bookSlice = createSlice({
       state.bookList = action.payload;
     },
     setPreviosPage: (state) => {
+      state.errorMessage = "";
       state.page -= 1;
     },
     setNextPage: (state) => {
+      state.errorMessage = "";
       state.page += 1;
     },
+    setTotalPage: (state, action) => {
+      state.totalPages = action.payload;
+    },
+    setSearchText: (state, action) => {
+      state.title = action.payload;
+      state.page = 1;
+    },
+    setSortBy: (state, action) => {
+      state.sortBy = action.payload;
+    },
+    setFilterObject: (state, action) => {
+      state.errorMessage = "";
+      state.filterObject = action.payload;
+      state.page = 1;
+    },
+    setErrorMessage: (state, action) => {
+      state.errorMessage = action.payload;
+      state.successMessage = "";
+    },
+    setSuccessMessage: (state, action) => {
+      state.successMessage = action.payload;
+      state.errorMessage = "";
+    },
+    resetMessage: (state) => {
+      state.successMessage = "";
+      state.errorMessage = "";
+    },
+    setSortedArrayKey: (state, action) => {
+      state.errorMessage = "";
+      state.sortedArrayKey = action.payload;
+    },
   },
-
-  // extraReducers: (builder) => {
-  // builder.addCase(bookApi.endpoints.getBooks.pending, (state) => {
-  //   state.loading = true;
-  //   state.successMessage = "";
-  //   state.errorMessage = "";
-  // });
-  // builder.addCase(getBookQuery.fulfilled, (state, action) => {
-  //   state.loading = false;
-  //   state.bookList = action.payload.data;
-  //   state.errorMessage = "";
-  //   state.totalPages = action.payload.pagination.totalPages;
-  // });
-  // builder.addCase(getBookQuery.rejected, (state, action) => {
-  //   state.loading = false;
-  //   state.bookList = [];
-  //   state.errorMessage = "Failed to Get Book!!";
-  //   state.successMessage = "";
-  // });
-  // builder.addCase(addBookQuery.pending, (state) => {
-  //   state.loading = true;
-  //   state.successMessage = "";
-  //   state.errorMessage = "";
-  // });
-  // builder.addCase(addBookQuery.fulfilled, (state) => {
-  //   state.loading = false;
-  //   state.successMessage = "Book added successfully!";
-  //   state.errorMessage = "";
-  // });
-  // builder.addCase(addBookQuery.rejected, (state, action) => {
-  //   state.loading = false;
-  //   state.errorMessage =
-  //     action.payload || "Failed to Add Book!! Please try again.";
-  //   state.successMessage = "";
-  // });
-  // builder.addCase(updateBookQuery.pending, (state) => {
-  //   state.loading = true;
-  //   state.successMessage = "";
-  //   state.errorMessage = "";
-  // });
-  // builder.addCase(updateBookQuery.fulfilled, (state) => {
-  //   state.loading = false;
-  //   state.successMessage = "Book is updated successfully!";
-  //   state.errorMessage = "";
-  // });
-  // builder.addCase(updateBookQuery.rejected, (state, action) => {
-  //   state.loading = false;
-  //   state.errorMessage = "Failed to Update Book!! Please try again.";
-  //   state.successMessage = "";
-  // });
-  // },
-  // extraReducers: (builder) => {
-  //   builder.addCase(fetchBooks.pending, (state) => {
-  //     state.loading = true;
-  //     state.successMessage = "";
-  //     state.errorMessage = "";
-  //   });
-  //   builder.addCase(fetchBooks.fulfilled, (state, action) => {
-  //     state.loading = false;
-  //     state.bookList = action.payload.data;
-  //     state.errorMessage = "";
-  //     state.totalPages = action.payload.pagination.totalPages;
-  //   });
-  //   builder.addCase(fetchBooks.rejected, (state, action) => {
-  //     state.loading = false;
-  //     state.bookList = [];
-  //     state.errorMessage = "Failed to Get Book!!";
-  //     state.successMessage = "";
-  //   });
-  //   builder.addCase(addBook.pending, (state) => {
-  //     state.loading = true;
-  //     state.successMessage = "";
-  //     state.errorMessage = "";
-  //   });
-  //   builder.addCase(addBook.fulfilled, (state) => {
-  //     state.loading = false;
-  //     state.successMessage = "Book added successfully!";
-  //     state.errorMessage = "";
-  //   });
-  //   builder.addCase(addBook.rejected, (state, action) => {
-  //     state.loading = false;
-  //     state.errorMessage =
-  //       action.payload || "Failed to Add Book!! Please try again.";
-  //     state.successMessage = "";
-  //   });
-  //   builder.addCase(updateBook.pending, (state) => {
-  //     state.loading = true;
-  //     state.successMessage = "";
-  //     state.errorMessage = "";
-  //   });
-  //   builder.addCase(updateBook.fulfilled, (state) => {
-  //     state.loading = false;
-  //     state.successMessage = "Book is updated successfully!";
-  //     state.errorMessage = "";
-  //   });
-  //   builder.addCase(updateBook.rejected, (state, action) => {
-  //     state.loading = false;
-  //     state.errorMessage = "Failed to Update Book!! Please try again.";
-  //     state.successMessage = "";
-  //   });
-  // },
 });
 
 export const {
@@ -156,6 +82,14 @@ export const {
   setBookList,
   setPreviosPage,
   setNextPage,
+  setTotalPage,
+  setSearchText,
+  setSortBy,
+  setFilterObject,
+  setErrorMessage,
+  setSuccessMessage,
+  resetMessage,
+  setSortedArrayKey,
 } = bookSlice.actions;
 
 export default bookSlice.reducer;

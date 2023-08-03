@@ -3,4 +3,7 @@
     .card-title{
         font-size: 2em;
     }
+    .edit-button {
+        width: 30% !important;
+    }
 }

@@ -1,30 +1,34 @@
 import React from "react";
+import { Button } from "../../sharedComponents/Button";
+
 import "./bookCard.css";
-import { useDispatch } from "react-redux";
-import { openEditModalAction } from "../../feature/bookSlice";
 
 const BookCard = ({ bookDetails, editBook }) => {
   const { author, country, language, link, pages, title, year } = bookDetails;
+
   return (
-    <div className="card shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Title: {title}</h5>
-        <p class="card-text">
-          <h5>Author: {author}</h5>
-          <h5>Country: {country}</h5>
-          <h5>Language: {language}</h5>
-          <h5>
-            Link: <a href="eee.sjs.sdj">{link}</a>
+    <div className="card shadow-sm d-flex h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{title}</h5>
+          <h5 className="d-flex flex-row justify-content-between">
+            <span>by {author}</span>
+            <span>{year}</span>
           </h5>
-          <h5>Pages: {pages}</h5>
-          <h5>Year: {year}</h5>
-        </p>
-        <button
-          class="btn btn-outline-primary"
+          <p className="card-text d-flex flex-row justify-content-between">
+            <span>Country : {country}</span>
+            <span>Language : {language}</span>
+          </p>
+          <span>Pages : {pages}</span>
+          <a href="eee.sjs.sdj" className="text-dark">
+            {link}
+          </a>
+        </div>
+        <Button
+          className={`edit-button btn-dark mt-auto`}
           onClick={() => editBook(bookDetails)}
-        >
-          Edit
-        </button>
+          buttonName="Edit"
+        />
       </div>
     </div>
   );
